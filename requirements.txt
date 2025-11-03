@@ -1,0 +1,12 @@
+earthengine-api==1.6.8
+joblib==1.5.2
+matplotlib==3.10.6
+matplotlib-inline==0.2.1
+numpy==2.3.3
+pandas==2.3.3
+PySocks @ file:///home/qshao/Huang/PySocks-1.7.1-py3-none-any.whl#sha256=2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5
+rasterio==1.4.3
+scikit-learn==1.7.2
+torch==2.9.0
+torchvision==0.24.0
+tqdm==4.67.1
