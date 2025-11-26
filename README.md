@@ -245,3 +245,167 @@ Epoch 1/12 loss=0.5678 val_acc=0.9123
 **从NDVI栈滑窗提取 → CNN自动分类 → 时序可视化，一键揭示黄河地貌侵蚀/沉积演变！** 🚀  
 
 
+# Step3: 水沙模型构建与模拟 🔄
+
+> **基于遥感特征 + 真实水沙数据 → Ridge 回归模拟**
+
+**输入：** Step2 输出 `time_series_area_percent.csv`（侵蚀 / 沉积 / 稳定占比）  
+**输出：** 水沙模拟结果 CSV、模型文件、可视化图表（实际 vs 预测、系数、时间序列）  
+**优势：**  
+- 整合公报水沙数据  
+- 线性 + 动力方程 (Log-Log) Ridge 模型  
+- 具备物理直觉的拟合  
+- **小样本也能用！**  
+
+---
+
+## 🔁 核心流程（6 步走）
+
+| 步骤 | 功能 | 关键技术 |
+|------|------|------------|
+| 1 | 读取特征 | `pandas.read_csv` + 手动补齐（基于公报） |
+| 2 | 数据整合 | `df.copy` + 列添加（水流量，泥沙） |
+| 3 | 线性 Ridge | `StandardScaler` + `Ridge(alpha=1.0)` + `r2_score` |
+| 4 | 动力方程 Ridge (Log-Log) | `np.log` + `column_stack` + `Ridge` + 指数恢复 |
+| 5 | 保存模型 | `joblib.dump` + `df.to_csv` |
+| 6 | 可视化 | `matplotlib` + `twinx` + `savefig(dpi=300)` |
+
+---
+
+## ⚡ 快速运行
+
+**Bash**
+```bash
+python water_sediment_model.py
+````
+
+**Python 主控脚本**
+
+```python
+# 假设已保存为 water_sediment_model.py，运行后自动输出至 ./pipeline_output
+# 完成：
+# 1. 特征 + 水沙整合
+# 2. 双模型拟合评估
+# 3. 结果保存 + 高质量图表输出
+```
+
+---
+
+## 📂 输出示例
+
+```text
+pipeline_output/
+├── sediment_simulation_results.csv       # 年份 + 特征 + 实际/预测泥沙
+├── yellow_river_sediment_model.pkl       # 动力方程 Ridge 模型
+├── yellow_river_model_scaler.pkl         # 标准化器
+├── water_sediment_model_comparison.png   # 实际 vs 预测
+├── model_coefficients.png                # 系数柱图
+└── features_time_series.png              # 双轴时间序列
+```
+
+---
+
+### 📌 整合后的模型输入数据 (特征 + 真实水沙)
+
+```text
+   year  erosion_pct  deposition_pct  stable_pct  water_discharge  sediment_load
+0  2020         52.0            28.0        20.0            35.96          0.170
+```
+
+---
+
+### 📈 [模型2] 动力方程Ridge模型 (Log-Log)
+
+```text
+R2  = 0.9999
+RMSE = 0.0005
+模型保存为: yellow_river_sediment_model.pkl
+图表已保存至 './pipeline_output' 目录.
+```
+
+---
+
+### ✔ 一句话总结
+
+**遥感特征 + 公报水沙 → 双 Ridge 模拟预测 → 揭示黄河动力机制与可视化趋势！ 🚀**
+
+---
+
+# Step4: 时序动态分析与预测 📈
+
+> **ARIMA / 线性回归趋势预测 + 内外因素识别**
+
+**输入：** Step3 输出 `sediment_simulation_results.csv`（特征 + 预测泥沙）
+**输出：** 预测趋势图（带 CI）+ 结论报告 TXT（变化对比 + 误差 + 因素分析）
+
+**优势：**
+
+* `ARIMA` 自动调优 (p,d,q<3)
+* `线性回归` 适用于 N < 10（小样本推荐）
+* 置信区间预测
+* 定量 + 定性结论
+* **当数据少时：优先线性趋势！ARIMA 易失效为平线** ⚠️
+
+---
+
+## 📌 核心流程（5 步走）
+
+| 步骤 | 功能        | 关键技术                             |
+| -- | --------- | -------------------------------- |
+| 1  | 读取数据      | `pandas.read_csv` + `set_index`  |
+| 2  | 提取序列      | 字典存储 Key → Series                |
+| 3  | 模型拟合      | `ARIMA.fit` / `LinearRegression` |
+| 4  | 预测与评估     | RMSE / CI / `get_forecast`       |
+| 5  | 可视 + 报告生成 | `matplotlib` + `open/write`      |
+
+---
+
+## ⚡ 快速运行
+
+**Bash (ARIMA 版本：数据多时用)**
+
+```bash
+python ARIMA.py
+```
+
+**Bash (线性回归：数据少时推荐)**
+
+```bash
+python Simple Linear.py
+```
+
+---
+
+## 📂 输出示例
+
+```text
+pipeline_output/
+├── dynamic_prediction_erosion.png       # 侵蚀趋势
+├── dynamic_prediction_deposition.png    # 沉积趋势
+├── dynamic_prediction_sediment.png      # 泥沙趋势
+└── conclusion_report.txt                # 详细结论
+```
+
+---
+
+### 📜 线性趋势预测完成 — 报告摘要
+
+
+--- 动态分析与预测结论报告 ---
+**重要提示：** 原始ARIMA模型因数据点过少 (N=5) 导致预测失效...
+
+1. 地貌变化对比 (基于线性趋势)：
+   - erosion_pct 年均变化斜率：0.125 %/年
+2. 模型误差分析（线性回归）...
+3. 内外因素识别：...
+
+报告生成日期：2025-11-26
+结论报告已保存: ./pipeline_output/conclusion_report.txt
+
+
+---
+
+### 🏁 一句话总结
+
+**小样本时序 → ARIMA / 线性预测趋势 → 内外因素报告 → 洞察黄河未来演变🚀**
+
