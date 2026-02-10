@@ -276,13 +276,13 @@ Epoch 1/12 loss=0.5678 val_acc=0.9123
 
 **Bash**
 ```bash
-python water_sediment_model.py
+python pre_model.py
 ````
 
 **Python 主控脚本**
 
 ```python
-# 假设已保存为 water_sediment_model.py，运行后自动输出至 ./pipeline_output
+# 已保存为 wpre_model.py，运行后自动输出至 ./pipeline_output
 # 完成：
 # 1. 特征 + 水沙整合
 # 2. 双模型拟合评估
